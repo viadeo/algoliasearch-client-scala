@@ -13,7 +13,7 @@ scalaVersion := "2.12.2"
 coverageEnabled := false
 
 val asyncHttpClientVersion = "2.0.33"
-val json4sVersion = "3.5.2"
+val json4sVersion = "3.2.11"
 val slf4jVersion = "1.7.25"
 val scalaUriVersion = "0.4.16"
 
@@ -24,11 +24,11 @@ val scalacheckVersion = "1.12.6"
 
 libraryDependencies += "org.asynchttpclient" % "async-http-client" % asyncHttpClientVersion
 
-libraryDependencies += "org.json4s" %% "json4s-ast" % json4sVersion
-libraryDependencies += "org.json4s" %% "json4s-core" % json4sVersion
-libraryDependencies += "org.json4s" %% "json4s-native" % json4sVersion
+libraryDependencies += "org.json4s" %% "json4s-ast" % json4sVersion % "provided"
+libraryDependencies += "org.json4s" %% "json4s-core" % json4sVersion % "provided"
+libraryDependencies += "org.json4s" %% "json4s-native" % json4sVersion % "provided"
 
-libraryDependencies += "org.slf4j" % "slf4j-api" % slf4jVersion
+libraryDependencies += "org.slf4j" % "slf4j-api" % slf4jVersion % "provided"
 
 libraryDependencies += "io.lemonlabs" %% "scala-uri" % scalaUriVersion
 
@@ -50,6 +50,20 @@ scalacOptions ++= Seq(
   "-Ywarn-numeric-widen",
   "-Xfuture"
 )
+
+// Assembly
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
+
+assemblyShadeRules in assembly := Seq(
+  ShadeRule.rename("io.netty.**" -> "shadeio.@0").inAll
+)
+
+assemblyMergeStrategy in assembly := {
+  case "META-INF/io.netty.versions.properties" => MergeStrategy.concat
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
 
 /**
   * Publishing to Sonatype & Maven Central
